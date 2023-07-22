@@ -88,18 +88,18 @@ data24$health[data24$health == -1] <- NA
 data24$health_f = factor(data24$health, levels = c(1, 2, 3, 4, 5),
                      labels = c('1: Very_Bad', '2: Bad', 'Normal', '4: Good', '5: Very_Good'))
 data24$age_f = ifelse(data24$age <= 39, 1,
-                  ifelse(data24$age <= 49, 2,
-                         ifelse(data24$age <= 59, 3,
-                                ifelse(data24$age <= 69, 4,
-                                       ifelse(data24$age <= 79, 5, 
-                                              ifelse(data24$age <= 89, 6, 7))))))
+               ifelse(data24$age <= 49, 2,
+               ifelse(data24$age <= 59, 3,
+               ifelse(data24$age <= 69, 4,
+               ifelse(data24$age <= 79, 5, 
+               ifelse(data24$age <= 89, 6, 7))))))
 data24$age_f = factor(data24$age_f, levels = c(1, 2, 3, 4, 5, 6, 7),
                   labels = c('30s','40s', '50s', '60s', '70s', '80s', 'over90'))
 data24$sati[data24$sati==(-1)] <- NA
 data24$sati = ifelse(data24$sati==1, 1, 
-                 ifelse(data24$sati==2, 2, 
-                        ifelse(data24$sati==3, 3,
-                               ifelse(data24$sati==4, 4, 5))))
+              ifelse(data24$sati==2, 2, 
+              ifelse(data24$sati==3, 3,
+              ifelse(data24$sati==4, 4, 5))))
 data24$sati_f = factor(data24$sati, levels = c(1, 2, 3, 4, 5),
                    labels = c('1: Very Bad', '2: Bad', '3: Normal', '4: Good', '5: Very Good'))
 data24$house_type_f = factor(data24$house_type, levels = c(1, 2, 3, 4, 5, 6),
@@ -115,15 +115,15 @@ data24$another_real_estate_f = factor(data24$another_real_estate, levels = c(1,2
                                   labels = c('1: house', '2: architect','3: woods&field','4: land','5: etc'))
 # mutate(data24, income_month = income_year/12)
 # data24$income_month = ifelse(data24$income_month<100, 1,
-#                          ifelse(data24$income_month<200, 2,
-#                                 ifelse(data24$income_month<300, 3,
-#                                        ifelse(data24$income_month<400, 4,
-#                                               ifelse(data24$income_month<500, 5,
-#                                                      ifelse(data24$income_month<600, 6,
-#                                                             ifelse(data24$income_month<700, 7,
-#                                                                    ifelse(data24$income_month<800, 8,
-#                                                                           ifelse(data24$income_month<900, 9,
-#                                                                                  ifelse(data24$income_month<1000, 10, 11))))))))))
+#                       ifelse(data24$income_month<200, 2,
+#                       ifelse(data24$income_month<300, 3,
+#                       ifelse(data24$income_month<400, 4,
+#                       ifelse(data24$income_month<500, 5,
+#                       ifelse(data24$income_month<600, 6,
+#                       ifelse(data24$income_month<700, 7,
+#                       ifelse(data24$income_month<800, 8,
+#                       ifelse(data24$income_month<900, 9,
+#                       ifelse(data24$income_month<1000, 10, 11))))))))))
 # data24$income_month_f = factor(data24$income_month, levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
 #                            labels = c('1: A_less than 1 million won', '2: Around 1 million won',
 #                                       '3: Around 2 million won', '4: Around 3 million won',
@@ -173,6 +173,105 @@ df$housing_price_change_f = ifelse(df$housing_price_change < 0, 1,
                                  ifelse(df$housing_price_change == 0, 2, 3))
 df$housing_price_change_f = factor(df$housing_price_change_f, levels = c(1, 2, 3),
                      labels = c('1: Price_Down', '2: No_Change', '3: Price_Up'))  
+
+
+##########################
+##### 과세표준 계산 ######
+##########################
+
+#종합부동산세 계산 
+str(df1)
+
+if(0)"
+housing_tax_change_price
+
+df1$housing_price24
+names(df1)
+#1주택은 11억 빼기
+#2주택 이상은 6억 빼기
+table(data24h$h242501) #주택소유여부 1: 예, 2: 아니오
+"
+table(df1$house_own) #주택소유여부 1: 예, 2: 아니오
+table(df1$region)
+
+df_x1 <- df1      
+
+
+df_x1 <- df1 %>% 
+  filter(region == "시군구 48개 코드에서 조정대상지역 찾기")
+
+names(df_x1)
+
+#1주택
+df_v1 <- df_x1 %>% 
+  select(pid, house_own, housing_price24, age) %>% 
+  filter(house_own == 2) %>% 
+  mutate(taxstandard = housing_price24 - 110000) %>% 
+  mutate(taxstandard = ifelse(taxstandard < 0, 0 , taxstandard)) %>% 
+  mutate(tax_house = ifelse(taxstandard <= 30000, taxstandard * 0.006,
+                            ifelse(taxstandard <= 60000 | taxstandard > 30000, taxstandard * 0.008,
+                                   ifelse(taxstandard <= 120000 | taxstandard > 60000, taxstandard * 0.012,   
+                                          ifelse(taxstandard <= 500000 | taxstandard > 120000, taxstandard * 0.016,
+                                                 ifelse(taxstandard <= 940000 | taxstandard > 500000, taxstandard * 0.022, taxstandard * 0.030)))))) %>% 
+  mutate(tax_house_final = ifelse(age >= 60 | age < 65 , tax_house * 0.20,
+                                  ifelse(age >= 65 | age < 70, tax_house * 0.30,
+                                         ifelse(age >= 70, tax_house * 0.40, tax_house))))
+
+
+df_v1
+
+
+#2주택
+df_v2 <- df_x1 %>% 
+  select(pid, house_own, housing_price24, age) %>% 
+  filter(house_own == 1) %>% 
+  mutate(taxstandard = housing_price24 - 60000) %>% 
+  mutate(taxstandard = ifelse(taxstandard < 0, 0 , taxstandard)) %>% 
+  mutate(tax_house = ifelse(taxstandard <= 30000, taxstandard * 0.006,
+                            ifelse(taxstandard <= 60000 | taxstandard > 30000, taxstandard * 0.008,
+                                   ifelse(taxstandard <= 120000 | taxstandard > 60000, taxstandard * 0.012,   
+                                          ifelse(taxstandard <= 500000 | taxstandard > 120000, taxstandard * 0.016,
+                                                 ifelse(taxstandard <= 940000 | taxstandard > 500000, taxstandard * 0.022, taxstandard * 0.030)))))) %>% 
+  mutate(tax_house_final = ifelse(age >= 60 | age < 65 , tax_house * 0.20,
+                                  ifelse(age >= 65 | age < 70, tax_house * 0.30,
+                                         ifelse(age >= 70, tax_house * 0.40, tax_house))))
+
+df_w1 <- rbind(df_v1, df_v2)
+df_w1 %>% 
+  arrange(house_own)
+
+
+#### move변수를 만들 필요없음.... 
+## 15년치 데이터 9차년도꺼부터 이사여부확인....해봐야 주택보유와 별개로
+## 전세 살다가 몇 년 후에 들어간 사례가 있을 것이라, 몇 년간 이사하지 않았는지의
+## 여부로는 보유기간을 정확히 산정할 수 없음.
+
+
+
+
+temp <- df1 %>% 
+  select(pid, 주택수, housing_price24) %>% 
+  arrange(pid)
+
+df1$housing_price24
+
+temp <- temp %>% 
+  mutate(house_number = ifelse(주택수 == 1, 0,
+                               ifelse(주택수 >= 2, 1, NA)))
+
+temp <- temp %>% 
+  filter(house_number == 1) %>% 
+  mutate(과세표준v = housing_price24 - 110000) %>% 
+  mutate(과세표준 = ifelse(과세표준v < 0, 0, 과세표준v)) %>% 
+  drop(과세표준v)
+
+
+temp <- temp %>% 
+  mutate(과세표준c = )
+
+###############################################################################
+## 결측치 필터링
+
 
 df <- df |> filter(!is.na(housing_price24))
 df <- df |> filter(!is.na(housing_price21))
