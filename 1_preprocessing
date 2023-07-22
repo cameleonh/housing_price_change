@@ -24,11 +24,15 @@ data24h <- read.csv("klips24h.csv", , header = T, stringsAsFactors = F, fileEnco
 data24h <- subset(data24h, select = c(h240221, h241406, h241407, h241401, 
                                       h242562, h241410, h241415, h241412, h242566,
                                       h242632, h242502, h242513, h240150, h242102,
-                                      h241407, h242502)) 
+                                      h241407, h242502, h242501, h240142)) 
 names(data24h) <- c('pid', 'residence_type', 'house_type', 'move24', 
                     'f_assets_deposit', 'housing_area', 'start_stay', 'housing_price24', 'f_savings_insurance',
                     'debt', 'more_housing', 'p_all_property_price', 'family_num', 'income_year',
-                    'house_type', 'another_real_estate')
+                    'house_type', 'another_real_estate', 'house_own', 'region')
+
+data24h$residence_type_f = factor(data24h$residence_type, levels = c(1, 2, 3, 4),
+                         labels = c('1: Own', '2: Jeonse', '3: Montly_rent', '4: ETC'))
+
 
 ## data24p_Import data
 # data24p <- read_excel("klips24p.xlsx") #가구원 코드북
@@ -269,12 +273,7 @@ temp <- temp %>%
 temp <- temp %>% 
   mutate(과세표준c = )
 
-###############################################################################
-## 결측치 필터링
-
-
-df <- df |> filter(!is.na(housing_price24))
-df <- df |> filter(!is.na(housing_price21))
+###################################################################################
 
 save.image()
 # write.csv(df, "./test_df_preprocess_klips.csv")
